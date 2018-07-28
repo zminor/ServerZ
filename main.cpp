@@ -43,7 +43,7 @@ int main (const int argc, char ** argv)
 	socklen_t inlen =1;
 	::memset(&client_addr, 0, sizeof(sockaddr_in));
 
-	//listenfd = bindPort(PORT);
+	//listenfd = Socket::bindPort(PORT);
 
 	std::cout << "Socket ready...\n" << std::endl;
 
