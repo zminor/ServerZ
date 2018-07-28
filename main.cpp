@@ -1,5 +1,9 @@
 #include <iostream>
 #include <csignal>
+#include <sys/socket.h>
+#include <string.h>
+#include <sys/types.h>
+#include <netinet/in.h>
 
 #include "socket/Socket.h"
 #include "utils/Utils.h"
@@ -34,7 +38,13 @@ int main (const int argc, char ** argv)
 	 *bind sockets
 	 * */
 	std::cout << "Binding socket..." << std::endl;
-	//native_socket_type listenfd = Socket::TryBindSocket();
+	System :: native_socket_type listenfd ;
+	struct sockaddr_in client_addr;
+	socklen_t inlen =1;
+	::memset(&client_addr, 0, sizeof(sockaddr_in));
+
+	//listenfd = bindPort(PORT);
+
 	std::cout << "Socket ready...\n" << std::endl;
 
 	/*
