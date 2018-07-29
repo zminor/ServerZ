@@ -4,12 +4,14 @@
 #include <string.h>
 #include <sys/types.h>
 #include <netinet/in.h>
+#include <stdint.h>
 
-#include "socket/Socket.h"
 #include "utils/Utils.h"
 #include "system/System.h"
+#include "socket/Socket.h"
+#define port 3000
 
-int main (const int argc, char ** argv)
+int main (const int argc,const char ** argv)
 {
 	std::cout << "Server Initializing..." << std::endl;
 	
@@ -42,8 +44,11 @@ int main (const int argc, char ** argv)
 	struct sockaddr_in client_addr;
 	socklen_t inlen =1;
 	::memset(&client_addr, 0, sizeof(sockaddr_in));
-
-	//listenfd = Socket::bindPort(PORT);
+	Socket::Socket sock;
+	if(!sock.tryBindPort(port))
+	{
+		std::cout << "Binding Port failed..."<< std::endl;
+	}
 
 	std::cout << "Socket ready...\n" << std::endl;
 
