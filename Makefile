@@ -3,7 +3,7 @@ MKDIR = mkdir -p
 
 #CXX = g++
 CXXFLAGS += -std=c++14 -c -Wall -O2
-LDFLAGS = -ldl -lpthread -lrt -lgnutls
+LDFLAGS = -ldl -lpthread -lrt
 
 DEFS = POSIX
 DEFINES = $(patsubst %, -D%, $(DEFS) )

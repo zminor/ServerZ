@@ -9,8 +9,10 @@
 #include "utils/Utils.h"
 #include "system/System.h"
 #include "socket/Socket.h"
-#define port 3000
+#include "socket/EpollProxy.h"
 
+#define PORT 3000
+#define MAXEVENT 1024
 int main (const int argc,const char ** argv)
 {
 	std::cout << "Server Initializing..." << std::endl;
@@ -45,20 +47,25 @@ int main (const int argc,const char ** argv)
 	socklen_t inlen =1;
 	::memset(&client_addr, 0, sizeof(sockaddr_in));
 	Socket::Socket sock;
-	if(!sock.tryBindPort(port))
+	if(!sock.tryBindPort(PORT))
 	{
 		std::cout << "Binding Port failed..."<< std::endl;
 	}
-
-	std::cout << "Socket ready...\n" << std::endl;
+	
+	printf("Socket %d ready...\n",sock.get_handle() );
 
 	/*
 	 *Init Epoll & add listenfd
 	 * */
 	std::cout << "Initializing Epoll..." << std::endl;
-	
-	std::cout << "Epoll initialized ...\n" << std::endl;
-
+	Socket::EpollProxy ep_proxy;
+	if( ep_proxy.create(MAXEVENT))
+	{
+		std::cout << "Epoll initialized ...\n" << std::endl;
+	}else 
+	{
+		std::cout <<"Epoll failed... \n" <<std::endl;
+	}
 	/*
 	 *Create thread pool
 	 * */
