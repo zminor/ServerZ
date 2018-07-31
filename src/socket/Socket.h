@@ -28,7 +28,7 @@ namespace Socket
 			bool bind(const int port)const  noexcept;
 			bool listen()const  noexcept;
 
-			Socket accept() const noexcept;
+			Socket accept(std::vector <Socket>& sockets) const noexcept;
 
 			bool nonblock(const bool flag = true)const  noexcept;
 
