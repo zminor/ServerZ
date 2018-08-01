@@ -7,7 +7,7 @@ namespace HttpServer
 	{
 					
 		std::cout << "Server Initializing..." << std::endl;
-		
+		this->controls.setProcess();	
 		/*
 		 *load config
 		 * */
@@ -65,27 +65,31 @@ namespace HttpServer
 		SocketsQueue sockets;
 		std::vector <Socket::Socket> accept_sockets;
 	
-		if( ep_proxy.accept(accept_sockets) )
-		{
-			sockets.lock();
+		do{
 
-			for(const Socket::Socket & sock: accept_sockets)
+			if( ep_proxy.accept(accept_sockets) )
 			{
-				if(sock.is_open())
-				{
-					sock.nonblock(true);
-					sockets.emplace(
-						std::tuple<Socket::Socket, Http2::IncStream*>	
-						{
-							sock,
-							nullptr
-						}
-					);
-				}
-			}
+				sockets.lock();
 
-			sockets.unlock();
+				for(const Socket::Socket & sock: accept_sockets)
+				{
+					if(sock.is_open())
+					{
+						sock.nonblock(true);
+						sockets.emplace(
+							std::tuple<Socket::Socket, Http2::IncStream*>	
+								{
+								sock,
+								nullptr
+							}
+						);
+					}
+				}
+
+				sockets.unlock();
+			}
 		}
+		while(this->controls.process_flag);
 		/*
 		 *Create thread pool
 		 * */
@@ -110,4 +114,17 @@ namespace HttpServer
 			return 0;	
 	}
 
+	static void close_listeners(std::vector<Socket::Socket> &listeners) 
+	{
+		for (auto &sock : listeners)
+		{
+			sock.close();
+		}
+	}
+
+	void Server::stop()
+	{
+		this->controls.stopProcess();
+		close_listeners(this->listeners);
+	}
 }

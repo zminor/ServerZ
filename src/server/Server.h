@@ -39,11 +39,9 @@ namespace HttpServer
 		void clear();
 
 	public:
-	Server()=default;
-	int run();
-	
-
-
+		Server()=default;
+		int run();
+		void stop();
 	};
 }
 
