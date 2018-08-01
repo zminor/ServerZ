@@ -3,7 +3,7 @@
 namespace HttpServer
 {
 
-	int HttpServer::run()
+	int Server::run()
 	{
 					
 		std::cout << "Server Initializing..." << std::endl;
@@ -34,7 +34,6 @@ namespace HttpServer
 		 * */
 		std::cout << "Binding socket..." << std::endl;
 		Socket::Socket listen_sock;
-		std::vector <Socket::Socket> listeners;
 		listeners.emplace_back(listen_sock);
 
 		for(Socket::Socket listen_sock : listeners)
@@ -108,7 +107,7 @@ namespace HttpServer
 
 			break;
 		}
-				
+			return 0;	
 	}
 
 }

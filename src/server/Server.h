@@ -26,22 +26,21 @@
 namespace HttpServer
 {
 
-	class HttpServer
+	class Server
 	{
 	public:
 		mutable ServerControls controls;
 
 	protected:
-		std::vector<Socket::Socket> liseners;
+		std::vector<Socket::Socket> listeners;
 		
 	protected:
-		int run();
 		bool init();
 		void clear();
 
 	public:
-	HttpServer()=default;
-
+	Server()=default;
+	int run();
 	
 
 

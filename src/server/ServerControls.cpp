@@ -2,6 +2,10 @@
 
 namespace HttpServer
 {
+	ServerControls::ServerControls()
+	{
+	
+	}
 
 	ServerControls::~ServerControls()
 	{
