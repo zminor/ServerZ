@@ -11,14 +11,13 @@
 
 namespace HttpServer
 {
-	class SocketsQueue:
-					public std::queue<std::tuple <Socket::Socket, Http2::IncStream*>>,
-					System::CachePadding <std::queue <std::tuple <Socket::Socket, Http2::IncStream*>>>,
-					public std::mutex
+		class SocketsQueue :
+				public std::queue<std::tuple<Socket::Socket, Http2::IncStream *> >,
+				System::CachePadding<std::queue<std::tuple<Socket::Socket, Http2::IncStream *> > >,
+				public std::mutex
 				{
-				
+
 				};
 }
-
 
 #endif
