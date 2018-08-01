@@ -28,7 +28,7 @@ namespace Socket
 		bool addSocket(const Socket &sock) noexcept;
 		bool removeSocket(const Socket &sock) noexcept;
 
-		bool accept(Socket &sock) const noexcept;
+		bool accept(std::vector <Socket> &sockets) const noexcept;
 		
 	};
 

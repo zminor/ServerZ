@@ -110,7 +110,7 @@ namespace Socket
 		return true;
 	}
 
-	bool EpollProxy::accept(Socket &sock) const noexcept
+	bool EpollProxy::accept(std::vector <Socket> &sockets) const noexcept
 	{
 		if(this->is_created())
 		{
@@ -138,13 +138,17 @@ namespace Socket
 								static_cast<sockaddr *> (nullptr),
 								static_cast <socklen_t*>(nullptr)
 								);
-						
+						if(~0 != client_socket)
+						{
+							sockets.emplace_back(Socket(client_socket));
+						}
 					}
 					while(~0 != client_socket);
 				}
 			}
+			return false == sockets.empty();
 		}
-		return true;
+		return false;
 	}
 
 }

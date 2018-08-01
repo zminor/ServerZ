@@ -90,48 +90,7 @@ namespace Socket
 			return 0 == ::listen(this->socket_handle, SOMAXCONN);
 		}
 		
-		bool List::accept(std::vector<Socket> &sockets) const noexcept
-		{
-			if (this->is_created() )
-			{
-				const int count = ::epoll_wait(
-				this->obj_list,
-				this->epoll_events.data(),
-				this->epoll_events.size(),
-				~0
-			);
-
-			if (count == ~0)
-		       	{
-				return false;
-			}
-
-			for (int i = 0; i < count; ++i)
-			{
-				const epoll_event &event = this->epoll_events[i];
-				if (event.events & EPOLLIN)
-				{
-					System::native_socket_type client_socket = ~0;
-
-					do {
-						client_socket = ::accept(
-							event.data.fd,
-							static_cast<sockaddr *>(nullptr),
-							static_cast<socklen_t *>(nullptr)
-						);
-						if (~0 != client_socket) {
-							sockets.emplace_back(Socket(client_socket) );
-						}
-					}
-					while (~0 != client_socket);
-				}
-			}
-			return false == sockets.empty();
-		}
-		return false;
-	}
-
-		bool Socket:: nonblock(bool flag) const noexcept
+		bool Socket:: nonblock(const bool flag) const noexcept
 		{
 			return ~0 != ::fcntl(
 				this->socket_handle,

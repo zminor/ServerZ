@@ -10,6 +10,9 @@
 #include "system/System.h"
 #include "socket/Socket.h"
 #include "socket/EpollProxy.h"
+#include "server/SocketsQueue.h"
+#include "transfer/http2/Http2.h"
+
 
 #define PORT 3000
 #define MAXEVENT 1024
@@ -42,17 +45,17 @@ int main (const int argc,const char ** argv)
 	 *bind sockets
 	 * */
 	std::cout << "Binding socket..." << std::endl;
-	System :: native_socket_type listenfd ;
-	struct sockaddr_in client_addr;
-	socklen_t inlen =1;
-	::memset(&client_addr, 0, sizeof(sockaddr_in));
-	Socket::Socket sock;
-	if(!sock.tryBindPort(PORT))
+	Socket::Socket listen_sock;
+	std::vector <Socket::Socket> listeners;
+	listeners.emplace_back(listen_sock);
+
+	for(Socket::Socket listen_sock : listeners)
 	{
+		if(!listen_sock.tryBindPort(PORT))
+		{
 		std::cout << "Binding Port failed..."<< std::endl;
+		}
 	}
-	
-	printf("Socket %d ready...\n",sock.get_handle() );
 
 	/*
 	 *Init Epoll & add listenfd
@@ -66,6 +69,37 @@ int main (const int argc,const char ** argv)
 	{
 		std::cout <<"Epoll failed... \n" <<std::endl;
 	}
+
+	for(Socket::Socket listen_sock : listeners)
+	{
+			ep_proxy.addSocket(listen_sock);
+	}
+
+	HttpServer::SocketsQueue sockets;
+	std::vector <Socket::Socket> accept_sockets;
+
+	
+		if( ep_proxy.accept(accept_sockets) )
+		{
+			sockets.lock();
+
+			for(const Socket::Socket & sock: accept_sockets)
+			{
+				if(sock.is_open())
+				{
+					sock.nonblock(true);
+					sockets.emplace(
+						std::tuple<Socket::Socket, Http2::IncStream*>	
+						{
+							sock,
+							nullptr
+						}
+					);
+				}
+			}
+
+			sockets.unlock();
+		}
 	/*
 	 *Create thread pool
 	 * */
@@ -84,6 +118,7 @@ int main (const int argc,const char ** argv)
 
 	while(1)
 	{
+
 		break;
 	}
 	
