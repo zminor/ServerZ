@@ -1,17 +1,20 @@
 #include "Server.h"
 
+#include <thread>
+#include <iostream>
+#include <functional>
+
 namespace HttpServer
 {
-
-	int Server::run()
-	{					
-	   std::cout << "Server Initializing..." << std::endl;
-   	   /*load config*/
-	   /* listen sockets */
-	   if(!InitListenPorts())
-	   {
-	      return 0x20;
-	   }
+   int Server::run()
+   {					
+        std::cout << "Server Initializing..." << std::endl;
+        /*load config*/
+        /* listen sockets */
+        if(!InitListenPorts())
+        {
+           return 0x20;
+        }
 
 	/* Init Epoll & add listenfd */
 	Socket::EpollProxy ep_proxy;
@@ -24,8 +27,12 @@ namespace HttpServer
 	/*Set Process*/
 	this->controls.setProcess();
 	std::cout <<"Server Started work..."<<std::endl;
+
 	/*Listening*/
 	SocketsQueue sockets;
+
+	std::function<int (Server*, SocketsQueue &)> serverCycleQueue = std::mem_fn(&Server::cycleQueue);
+	std::thread threadQueue(serverCycleQueue, this, std::ref(sockets));
 	std::vector <Socket::Socket> accept_sockets;
 	
 	/*Create thread pool*/
@@ -59,6 +66,7 @@ namespace HttpServer
 	 while(this->controls.process_flag);
 
 	/*Clean*/
+	threadQueue.join();
 	ep_proxy.destroy();
 	if(this->listeners.empty() == false)
 	{
@@ -76,45 +84,56 @@ namespace HttpServer
 	return EXIT_SUCCESS;
    }
 
-	static void close_listeners(std::vector<Socket::Socket> &listeners) 
-	{
-	   for (auto &sock : listeners)
-	   {
-	      sock.close();
-	   }
+   int Server::cycleQueue(SocketsQueue & sockets)
+   {	
+	do{
+	   std::cout << "cycleQueue" << std::endl;		
+	   this->controls.process_flag = false;
 	}
+	while(this->controls.process_flag);
 
-	void Server::stop()
+	return 0;      
+   }
+
+   static void close_listeners(std::vector<Socket::Socket> &listeners) 
+   {
+      for (auto &sock : listeners)
+      {
+         sock.close();
+      }
+   }
+
+   void Server::stop()
+   {
+      this->controls.stopProcess();
+      close_listeners(this->listeners);
+   }
+
+   void Server::clear()
+   {
+      this->controls.clear();
+   }
+ 
+   bool Server::InitListenPorts()
+   {
+     std::cout << "Binding listening socket..." << std::endl;
+     Socket::Socket listen_sock;
+     listeners.emplace_back(listen_sock);
+
+     for(Socket::Socket listen_sock : listeners)
+     {
+        if(!listen_sock.tryBindPort(PORT))
 	{
-	   this->controls.stopProcess();
-	   close_listeners(this->listeners);
+   	   std::cout << "Binding Port failed..."<< std::endl;
 	}
+     }
 
-	void Server::clear()
-	{
-	   this->controls.clear();
-	}
-
-	bool Server::InitListenPorts()
-	{
-   	   std::cout << "Binding listening socket..." << std::endl;
-	   Socket::Socket listen_sock;
-	   listeners.emplace_back(listen_sock);
-
-	   for(Socket::Socket listen_sock : listeners)
-	   {
-	      if(!listen_sock.tryBindPort(PORT))
-	      {
-	         std::cout << "Binding Port failed..."<< std::endl;
-	      }
-	   }
-
-	   if(this->listeners.empty())
-	   {
-	   	std::cout <<"Error any Socket was not open" <<std::endl;
-		this->clear();
-		return 0x20;
-	   }
-	   return true;
-	}
+     if(this->listeners.empty())
+     {
+        std::cout <<"Error any Socket was not open" <<std::endl;
+	this->clear();
+	return 0x20;
+     }
+     return true;
+   }
 }

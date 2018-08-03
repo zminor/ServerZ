@@ -38,6 +38,8 @@ namespace HttpServer
 		bool init();
 		void clear();
 		bool  InitListenPorts();
+
+		int cycleQueue(SocketsQueue &sockets);
 	public:
 		Server()=default;
 		int run();
