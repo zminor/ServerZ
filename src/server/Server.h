@@ -37,7 +37,7 @@ namespace HttpServer
 	protected:
 		bool init();
 		void clear();
-
+		bool  InitListenPorts();
 	public:
 		Server()=default;
 		int run();
