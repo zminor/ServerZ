@@ -33,7 +33,8 @@ namespace HttpServer
 
 	protected:
 		std::vector<Socket::Socket> listeners;
-		
+		mutable std::atomic_size_t threads_working_count;
+
 	protected:
 		bool init();
 		void clear();

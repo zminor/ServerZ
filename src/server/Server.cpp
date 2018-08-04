@@ -4,6 +4,8 @@
 #include <iostream>
 #include <functional>
 
+#define MAXTHREADS 20
+
 namespace HttpServer
 {
    int Server::run()
@@ -86,13 +88,46 @@ namespace HttpServer
 
    int Server::cycleQueue(SocketsQueue & sockets)
    {	
-	do{
-	   std::cout << "cycleQueue" << std::endl;		
-	   this->controls.process_flag = false;
-	}
-	while(this->controls.process_flag);
+			//Thread count settup
+			size_t threads_max_count =0;
+			
+			threads_max_count = std::thread::hardware_concurrency();
+			if(0 == threads_max_count)
+			{
+				threads_max_count = 1;
+			}
+				threads_max_count *= 2;
+			
+			if(threads_max_count > MAXTHREADS) 
+			{
+				threads_max_count = MAXTHREADS;
+			}
+			std::cout<< "threads_max_count = " << threads_max_count <<std::endl;
+			
+			//Active thread count
+			this->threads_working_count =0;
+			
+			std::vector <std::thread> active_threads;
+			active_threads.reserve(threads_max_count);
 
-	return 0;      
+			do{
+				while(
+						this->threads_working_count == active_threads.size() &&
+						active_threads.size() < threads_max_count && 
+						sockets.empty() == false)
+				{
+
+				}
+
+				size_t notify_count = active_threads.size() - this->threads_working_count;
+				if(notify_count > sockets.size())
+				{
+					notify_count = sockets.size();
+				}
+			}
+			while(this->controls.process_flag);
+
+			return 0;      
    }
 
    static void close_listeners(std::vector<Socket::Socket> &listeners) 
