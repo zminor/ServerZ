@@ -2,6 +2,7 @@
 #define __SERVERCONTROLS_H__
 
 #include "../system/Cache.h"
+#include "../utils/Event.h"
 
 #include <atomic>
 #include <csignal>
@@ -16,6 +17,7 @@ namespace HttpServer
 		sig_atomic_t process_flag;
 		sig_atomic_t restart_flag;
 
+		Utils::Event* eventProcessQueue;
 	public:
 		ServerControls();
 		~ServerControls();

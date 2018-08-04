@@ -1,46 +1,46 @@
 #ifndef __REQUEST_H__
 #define __REQUEST_H__
 
-#include "protocol/ServerProtocol.h"
-#include "../transfer/FileIncoming.h"
+#include "../transfer/RequestData.h"
 #include "../transfer/ProtocolVariant.h"
 
 #include <unordered_map>
+#include <chrono>
 
 namespace HttpServer
 {
-	struct Request
-	{
-	//	ServerProtocol *prot;
-		std::string document_root;
-		std::string host;
-		std::string path;
-		std::string method;
-		std::unordered_multimap<std::string, std::string> params;
-		std::unordered_multimap<std::string, std::string> headers;
-		std::unordered_multimap<std::string, std::string> data;
-		std::unordered_multimap<std::string, Transfer::FileIncoming> files;
-		std::unordered_multimap<std::string, std::string> cookies;
-
-		Transfer::ProtocolVariant protocol_variant;
-
-	public:
-		std::string getHeader(const std::string &key) const;
-
-		bool isDataExists(const std::string &key) const;
-
-		std::string getDataAsString(const std::string &key) const;
-
-		std::vector<std::string> getDataAsArray(const std::string &key) const;
-
-		bool isFileExists(const std::string &key) const;
-
-		Transfer::FileIncoming getFile(const std::string &key) const;
-
-		std::vector<Transfer::FileIncoming> getFilesAsArray(const std::string &key) const;
-
-		std::string getCookieAsString(const std::string &cookieName) const;
-	};
+		enum ConnectionParams {
+						CONNECTION_CLOSE = 0,
+						CONNECTION_REUSE = 1,
+						CONNECTION_LEAVE_OPEN = 2
+		};
+		
+		struct Request : public Transfer::request_data
+		{
+			std::unordered_map<std::string, std::string> outgoing_headers;
+			
+			std::string host;
+			std::string path;
+			std::string method;
+			
+			std::chrono::milliseconds timeout;
+			
+			size_t keep_alive_count;
+			int connection_params;
+			int app_exit_code;
+																												
+			Transfer::ProtocolVariant protocol_variant;
+			void *protocol_data;
+			
+		public:
+			void clear() noexcept;
+		};
+		
+		struct DataTransfer
+		{
+						size_t full_size;
+						size_t send_total;
+		};
 }
 
 #endif
