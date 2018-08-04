@@ -2,6 +2,7 @@
 #include "../utils/Event.h"
 #include "../socket/AdapterDefault.h"
 #include "protocol/ServerProtocol.h"
+#include "protocol/ServerHttp2Stream.h"
 
 #include <thread>
 #include <iostream>
@@ -11,6 +12,24 @@
 
 namespace HttpServer
 {
+
+	static std::unique_ptr<ServerProtocol> getProtocolVariant(
+									Socket::Adapter &sock,
+									const ServerSettings &settings,
+									ServerControls &controls,
+									SocketsQueue &sockets,
+									Http2::IncStream *stream)					
+	{
+		std::unique_ptr<ServerProtocol> prot;
+		if (stream)
+		{
+			prot.reset(new ServerHttp2Stream(sock, settings, controls, stream) );
+			return prot;
+		}
+
+		return prot;
+	}
+
    int Server::run()
    {					
         std::cout << "Server Initializing..." << std::endl;
@@ -220,30 +239,31 @@ namespace HttpServer
 									Http2::IncStream *stream
 									)const
 	{
-					/*
+					
 		std::unique_ptr <ServerProtocol> prot = getProtocolVariant(
-										sock,
-										
-										)	*/
+												sock,
+												this->settings,
+												this->controls,
+												sockets,
+												stream										
+										);	
+	if (prot) {
+				// Check if switching protocol
+			/*	for (ServerProtocol *ret = nullptr; ; )
+				{
+								ret = prot->process();
+								
+								if (prot.get() == ret) {
+												break;
+								}
+								prot.reset(ret);
+								
+				}
+				*/
+				prot->close();
+				 																																}
 	}
 
-	static std::unique_ptr<ServerProtocol> getProtocolVariant(
-									Socket::Adapter &sock,
-									const ServerSettings &settings,
-									ServerControls &controls,
-									SocketsQueue &sockets,
-									Http2::IncStream *stream)					
-	{
-		std::unique_ptr<ServerProtocol> prot;
-		if (stream)
-		{
-		//	prot.reset(new ServerHttp2Stream(sock, settings, controls, stream) );
-			return prot;
-		}
-
-		return prot;
-	
-	}
 //-----------------------------------------------------------------------------------------//
    static void close_listeners(std::vector<Socket::Socket> &listeners) 
    {

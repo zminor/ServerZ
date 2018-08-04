@@ -21,6 +21,7 @@
 #include "ServerControls.h"
 #include "SocketsQueue.h"
 #include "../socket/AdapterDefault.h"
+#include "ServerSettings.h"
 
 const int PORT =  3000;
 #define MAXEVENT 1024
@@ -37,6 +38,8 @@ namespace HttpServer
 		std::vector<Socket::Socket> listeners;
 		mutable std::atomic_size_t threads_working_count;
 		std::unordered_set <int> ports;
+
+		ServerSettings settings;
 	protected:
 		bool init();
 		void clear();
